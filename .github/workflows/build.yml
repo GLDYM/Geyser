@@ -80,7 +80,7 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v0.1.15
       with:
-        tag_name: Action Build
+        tag_name: ActionBuild
         files: |
           bootstrap/fabric/build/libs/Geyser-Fabric.jar
           bootstrap/standalone/build/libs/Geyser-Standalone.jar
