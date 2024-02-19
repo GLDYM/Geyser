@@ -75,3 +75,12 @@ jobs:
         name: Geyser Velocity
         path: bootstrap/velocity/build/libs/Geyser-Velocity.jar
         if-no-files-found: error
+    - name: Release
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        files: |
+          bootstrap/fabric/build/libs/Geyser-Fabric.jar
+          bootstrap/standalone/build/libs/Geyser-Standalone.jar
+          bootstrap/spigot/build/libs/Geyser-Spigot.jar
+          bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
+          bootstrap/velocity/build/libs/Geyser-Velocity.jar
