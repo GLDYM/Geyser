@@ -20,6 +20,7 @@ jobs:
       run: |
         git config user.name 'Shanwer'
         git config user.email 'Shanwer@qq.com'
+        git config --global merge.ours.driver true
 
     - name: Add upstream remote
       run: git remote add upstream https://github.com/GeyserMC/Geyser.git
