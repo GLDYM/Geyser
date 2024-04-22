@@ -5,7 +5,7 @@ on:
   push:
     paths-ignore:
       - '.github/ISSUE_TEMPLATE/*.yml'
-      - '.github/actions/pullrequest.yml'
+      - '.github/workflows/*.yml'
       - '.idea/copyright/*.xml'
       - '.gitignore'
       - 'CONTRIBUTING.md'
