@@ -1,1 +1,1 @@
-.github/* merge=ours
+.github/workflows/*.yml merge=ours
