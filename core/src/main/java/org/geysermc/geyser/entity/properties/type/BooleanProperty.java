@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2023 GeyserMC. http://geysermc.org
+ * Copyright (c) 2019-2024 GeyserMC. http://geysermc.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,22 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.item;
+package org.geysermc.geyser.entity.properties.type;
 
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.opennbt.tag.builtin.IntTag;
+import org.cloudburstmc.nbt.NbtMap;
 
-public interface DyeableLeatherItem {
+public class BooleanProperty implements PropertyType {
+    private final String name;
 
-    static void translateNbtToBedrock(CompoundTag tag) {
-        CompoundTag displayTag = tag.get("display");
-        if (displayTag == null) {
-            return;
-        }
-        IntTag color = displayTag.remove("color");
-        if (color != null) {
-            tag.put(new IntTag("customColor", color.getValue()));
-        }
+    public BooleanProperty(String name) {
+        this.name = name;
     }
 
-    static void translateNbtToJava(CompoundTag tag) {
-        IntTag color = tag.get("customColor");
-        if (color == null) {
-            return;
-        }
-        CompoundTag displayTag = tag.get("display");
-        if (displayTag == null) {
-            displayTag = new CompoundTag("display");
-        }
-        displayTag.put(color);
-        tag.remove("customColor");
+    @Override
+    public NbtMap nbtMap() {
+        return NbtMap.builder()
+                .putString("name", name)
+                .putInt("type", 2)
+                .build();
     }
 }
