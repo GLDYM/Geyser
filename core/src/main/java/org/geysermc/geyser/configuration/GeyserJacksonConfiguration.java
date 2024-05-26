@@ -97,7 +97,7 @@ public abstract class GeyserJacksonConfiguration implements GeyserConfiguration 
     private boolean debugMode = false;
 
     @JsonProperty("allow-third-party-capes")
-    private boolean allowThirdPartyCapes = true;
+    private boolean allowThirdPartyCapes = false;
 
     @JsonProperty("auth-base-uri")
     private String authBaseUri = "";
