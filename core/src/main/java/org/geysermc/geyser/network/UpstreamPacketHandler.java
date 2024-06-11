@@ -133,6 +133,8 @@ public class UpstreamPacketHandler extends LoggingPacketHandler {
         }
 
         session.getUpstream().getSession().setCodec(packetCodec);
+        // FIXME temporary until 1.20.80 is dropped
+        session.getPlayerEntity().resetAir();
         return true;
     }
 
