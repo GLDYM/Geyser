@@ -1,0 +1,108 @@
+name: Build-Github
+
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '.github/ISSUE_TEMPLATE/*.yml'
+      - '.github/workflows/*.yml'
+      - '.idea/copyright/*.xml'
+      - '.gitignore'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - 'Jenkinsfile '
+      - 'README.md'
+      - 'licenseheader.txt'
+  schedule:
+    - cron: '0 18 * * *'
+    
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository and submodules
+        # See https://github.com/actions/checkout/commits
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 21
+        # See https://github.com/actions/setup-java/commits
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Build
+        # See https://github.com/gradle/gradle-build-action/commits
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: build
+          gradle-home-cache-cleanup: true
+
+      - name: Archive artifacts (Geyser Fabric)
+        # See https://github.com/actions/upload-artifact/commits
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Fabric
+          path: bootstrap/mod/fabric/build/libs/Geyser-Fabric.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser NeoForge)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser NeoForge
+          path: bootstrap/mod/neoforge/build/libs/Geyser-NeoForge.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser Standalone)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Standalone
+          path: bootstrap/standalone/build/libs/Geyser-Standalone.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser Spigot)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Spigot
+          path: bootstrap/spigot/build/libs/Geyser-Spigot.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser BungeeCord)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser BungeeCord
+          path: bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser Velocity)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Velocity
+          path: bootstrap/velocity/build/libs/Geyser-Velocity.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser ViaProxy)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser ViaProxy
+          path: bootstrap/viaproxy/build/libs/Geyser-ViaProxy.jar
+          if-no-files-found: error
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          tag_name: ActionBuild
+          files: |
+            bootstrap/mod/fabric/build/libs/Geyser-Fabric.jar
+            bootstrap/mod/neoforge/build/libs/Geyser-NeoForge.jar
+            bootstrap/standalone/build/libs/Geyser-Standalone.jar
+            bootstrap/spigot/build/libs/Geyser-Spigot.jar
+            bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
+            bootstrap/velocity/build/libs/Geyser-Velocity.jar
+            
