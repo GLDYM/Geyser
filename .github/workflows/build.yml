@@ -1,120 +1,108 @@
 name: Build
 
+
 on:
   workflow_dispatch:
   push:
-    branches-ignore:
-      - 'gh-readonly-queue/**'
     paths-ignore:
       - '.github/ISSUE_TEMPLATE/*.yml'
-      - '.github/workflows/build-remote.yml'
-      - '.github/workflows/preview.yml'
-      - '.github/workflows/pull-request.yml'
+      - '.github/workflows/*.yml'
       - '.idea/copyright/*.xml'
       - '.gitignore'
       - 'CONTRIBUTING.md'
       - 'LICENSE'
       - 'Jenkinsfile '
       - 'README.md'
+      - 'licenseheader.txt'
+  schedule:
+    - cron: '0 18 * * *'
+    
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Release Info
-        id: release-info
-        uses: GeyserMC/actions/previous-release@master
+      - name: Checkout repository and submodules
+        # See https://github.com/actions/checkout/commits
+        uses: actions/checkout@v4
         with:
-          data: ${{ vars.RELEASEACTION_PREVRELEASE }}
+          submodules: recursive
 
-      - name: Setup Gradle
-        uses: GeyserMC/actions/setup-gradle-composite@master
+      - name: Set up JDK 21
+        # See https://github.com/actions/setup-java/commits
+        uses: actions/setup-java@v4
         with:
-          setup-java_java-version: 21
+          java-version: 21
+          distribution: temurin
 
-      - name: Build Geyser
-        run: ./gradlew build
-        env:
-          BUILD_NUMBER: ${{ steps.release-info.outputs.curentRelease }}
-          
-      - name: Archive Artifacts
-        uses: GeyserMC/actions/upload-multi-artifact@master
+      - name: Build
+        # See https://github.com/gradle/gradle-build-action/commits
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: build
+          gradle-home-cache-cleanup: true
+
+      - name: Archive artifacts (Geyser Fabric)
+        # See https://github.com/actions/upload-artifact/commits
+        uses: actions/upload-artifact@main
         if: success()
         with:
-          artifacts: |
+          name: Geyser Fabric
+          path: bootstrap/mod/fabric/build/libs/Geyser-Fabric.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser NeoForge)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser NeoForge
+          path: bootstrap/mod/neoforge/build/libs/Geyser-NeoForge.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser Standalone)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Standalone
+          path: bootstrap/standalone/build/libs/Geyser-Standalone.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser Spigot)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Spigot
+          path: bootstrap/spigot/build/libs/Geyser-Spigot.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser BungeeCord)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser BungeeCord
+          path: bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser Velocity)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser Velocity
+          path: bootstrap/velocity/build/libs/Geyser-Velocity.jar
+          if-no-files-found: error
+      - name: Archive artifacts (Geyser ViaProxy)
+        uses: actions/upload-artifact@main
+        if: success()
+        with:
+          name: Geyser ViaProxy
+          path: bootstrap/viaproxy/build/libs/Geyser-ViaProxy.jar
+          if-no-files-found: error
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          tag_name: ActionBuild
+          files: |
             bootstrap/mod/fabric/build/libs/Geyser-Fabric.jar
             bootstrap/mod/neoforge/build/libs/Geyser-NeoForge.jar
             bootstrap/standalone/build/libs/Geyser-Standalone.jar
             bootstrap/spigot/build/libs/Geyser-Spigot.jar
             bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
             bootstrap/velocity/build/libs/Geyser-Velocity.jar
-            bootstrap/viaproxy/build/libs/Geyser-ViaProxy.jar
-
-      - name: Publish to Maven Repository
-        if: ${{ success() && github.repository == 'GeyserMC/Geyser' && github.ref_name == 'master' }}
-        run: ./gradlew publish
-        env:
-          BUILD_NUMBER: ${{ steps.release-info.outputs.curentRelease }}
-          ORG_GRADLE_PROJECT_geysermcUsername: ${{ vars.DEPLOY_USER }}
-          ORG_GRADLE_PROJECT_geysermcPassword: ${{ secrets.DEPLOY_PASS }}
-        
-      - name: Get Version
-        if: ${{ (success() || failure()) && github.repository == 'GeyserMC/Geyser' }}
-        id: get-version
-        run: |
-          version=$(cat gradle.properties | grep -o "version=[0-9\\.]*" | cut -d"=" -f2)
-          echo "VERSION=${version}" >> $GITHUB_OUTPUT
-
-      - name: Get Release Metadata
-        if: ${{ (success() || failure()) && github.repository == 'GeyserMC/Geyser' }}
-        uses: GeyserMC/actions/release@master
-        id: metadata
-        with:
-          appID: ${{ secrets.RELEASE_APP_ID }}
-          appPrivateKey: ${{ secrets.RELEASE_APP_PK }}
-          files: |
-            bungeecord:bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
-            fabric:bootstrap/mod/fabric/build/libs/Geyser-Fabric.jar
-            neoforge:bootstrap/mod/neoforge/build/libs/Geyser-NeoForge.jar
-            spigot:bootstrap/spigot/build/libs/Geyser-Spigot.jar
-            standalone:bootstrap/standalone/build/libs/Geyser-Standalone.jar
-            velocity:bootstrap/velocity/build/libs/Geyser-Velocity.jar
-            viaproxy:bootstrap/viaproxy/build/libs/Geyser-ViaProxy.jar
-          releaseEnabled: false
-          saveMetadata: true
-          releaseProject: 'geyser'
-          releaseVersion: ${{ steps.get-version.outputs.VERSION }}
-
-      - name: Publish to Downloads API
-        if: ${{ success() && github.repository == 'GeyserMC/Geyser' && github.ref_name == 'master' }}
-        uses: GeyserMC/actions/upload-release@master
-        with:
-          username: ${{ vars.DOWNLOADS_USERNAME }}
-          privateKey: ${{ secrets.DOWNLOADS_PRIVATE_KEY }}
-          host: ${{ secrets.DOWNLOADS_SERVER_IP }}
-          files: |
-            bootstrap/bungeecord/build/libs/Geyser-BungeeCord.jar
-            bootstrap/mod/fabric/build/libs/Geyser-Fabric.jar
-            bootstrap/mod/neoforge/build/libs/Geyser-NeoForge.jar
-            bootstrap/spigot/build/libs/Geyser-Spigot.jar
-            bootstrap/standalone/build/libs/Geyser-Standalone.jar
-            bootstrap/velocity/build/libs/Geyser-Velocity.jar
-            bootstrap/viaproxy/build/libs/Geyser-ViaProxy.jar
-          changelog: ${{ steps.metadata.outputs.body }}
-
-      - name: Publish to Modrinth
-        if: ${{ success() && github.repository == 'GeyserMC/Geyser' && github.ref_name == 'master' }}
-        env:
-          CHANGELOG: ${{ steps.metadata.outputs.body }}
-          BUILD_NUMBER: ${{ steps.release-info.outputs.curentRelease }}
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-        run: ./gradlew modrinth
-
-      - name: Notify Discord
-        if: ${{ (success() || failure()) && github.repository == 'GeyserMC/Geyser' }}
-        uses: GeyserMC/actions/notify-discord@master
-        with:
-          discordWebhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ job.status }}
-          body: ${{ steps.metadata.outputs.body }}
-          includeDownloads: ${{ github.ref_name == 'master' }}
+            
