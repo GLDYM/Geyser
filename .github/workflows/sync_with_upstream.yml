@@ -13,15 +13,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
+        token: ${{ secrets.GEYSER }}
         fetch-depth: 0
 
     - name: Configure Git
       run: |
         git config user.name 'Shanwer'
         git config user.email 'Shanwer@qq.com'
+        git config --global merge.ours.driver true
 
     - name: Add upstream remote
-      run: git remote add upstream https://github.com/GeyserMC/Geyser.git
+      run: git remote add upstream https://github.com/Shanwer/Geyser.git
 
     - name: Fetch upstream changes
       run: git fetch upstream
@@ -34,7 +36,5 @@ jobs:
         }
       
     - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: 'master'
+      run: |
+        git push
