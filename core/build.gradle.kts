@@ -64,6 +64,7 @@ dependencies {
 
     // Test
     testImplementation(libs.junit)
+    testImplementation(libs.mockito)
 
     // Annotation Processors
     compileOnly(projects.ap)
