@@ -23,11 +23,26 @@
  * @link https://github.com/GeyserMC/Geyser
  */
 
-package org.geysermc.geyser.registry.loader;
+package org.geysermc.geyser.registry.populator;
 
-/**
- * A holder of the constructor parameters to prevent them from automatically loading,
- * and instead load them when the load method is called.
- */
-public record RegistryLoaderHolder<I, M>(I input, RegistryLoader<I, M> registryLoader) {
+import org.geysermc.geyser.item.type.Item;
+import org.geysermc.geyser.registry.type.GeyserMappingItem;
+
+import java.util.Map;
+
+public class Conversion748_729 {
+
+    private static final Map<String, Integer> NEW_PLAYER_HEADS = Map.of("minecraft:skeleton_skull", 0, "minecraft:wither_skeleton_skull", 1, "minecraft:zombie_head", 2, "minecraft:player_head", 3, "minecraft:creeper_head", 4, "minecraft:dragon_head", 5, "minecraft:piglin_head", 6);
+
+    static GeyserMappingItem remapItem(Item item, GeyserMappingItem mapping) {
+        String identifier = mapping.getBedrockIdentifier();
+
+        if (NEW_PLAYER_HEADS.containsKey(identifier)) {
+            return mapping.withBedrockIdentifier("minecraft:skull")
+                .withBedrockData(NEW_PLAYER_HEADS.get(identifier));
+        }
+
+        return mapping;
+    }
+
 }
