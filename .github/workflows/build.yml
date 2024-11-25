@@ -39,7 +39,7 @@ jobs:
 
       - name: Build
         # See https://github.com/gradle/gradle-build-action/commits
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           arguments: build
           gradle-home-cache-cleanup: true
