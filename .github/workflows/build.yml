@@ -36,13 +36,14 @@ jobs:
         with:
           java-version: 21
           distribution: temurin
-
-      - name: Build
-        # See https://github.com/gradle/gradle-build-action/commits
-        uses: gradle/actions/setup-gradle@v4
+          
+      - name: Setup Gradle
+        uses: GeyserMC/actions/setup-gradle-composite@master
         with:
-          arguments: build
-          gradle-home-cache-cleanup: true
+          setup-java_java-version: 21
+
+      - name: Build Geyser
+        run: ./gradlew build
 
       - name: Archive artifacts (Geyser Fabric)
         # See https://github.com/actions/upload-artifact/commits
